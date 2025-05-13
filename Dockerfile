@@ -6,7 +6,8 @@ FROM python:3.9-slim
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV FLASK_APP=app.py
-ENV FLASK_ENV=production # Ensure Flask runs in production mode
+ENV FLASK_ENV=production
+# Ensure Flask runs in production mode
 
 # Install system dependencies for Chrome and Chromedriver
 RUN apt-get update && apt-get install -y --no-install-recommends \
