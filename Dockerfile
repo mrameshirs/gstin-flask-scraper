@@ -1,4 +1,4 @@
-# Dockerfile (Corrected Section v2)
+# Dockerfile (Corrected Section v3)
 # Use an official Python runtime as a parent image
 FROM python:3.9-slim
 
@@ -29,19 +29,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # --- ChromeDriver ---
     # Pin a known good version of Chromedriver.
     # This version should be compatible with a relatively recent google-chrome-stable.
-    # If google-chrome-stable installs a very different version, this might need adjustment for runtime compatibility,
-    # but the download itself should work with the correct URL.
     && CHROMEDRIVER_VERSION="114.0.5735.90" \
     && echo "Attempting to download Chromedriver version: ${CHROMEDRIVER_VERSION}" \
     && wget -q --continue -P /tmp https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip \
     && echo "Unzipping Chromedriver..." \
-    && unzip /tmp/chromedriver_linux64.zip -d /usr/bin/ \
-    # The zip file for 114.0.5735.90 directly contains 'chromedriver', not a subfolder.
-    # If it were in a subfolder like 'chromedriver-linux64', the mv command would be different.
-    # Let's assume it extracts directly to /usr/bin/ or we might need to adjust path for 'mv' if unzip creates a subdir.
-    # A common practice is to unzip to /tmp and then mv. Let's stick to that.
     # Re-doing unzip and mv for clarity and common practice:
-    && rm -f /usr/bin/chromedriver # Remove if previous unzip put it there directly
+    && rm -f /usr/bin/chromedriver \ # Remove if previous unzip put it there directly. Line continuation added.
     && unzip /tmp/chromedriver_linux64.zip -d /tmp/ \
     && mv /tmp/chromedriver /usr/bin/chromedriver \
     && echo "Setting Chromedriver permissions..." \
