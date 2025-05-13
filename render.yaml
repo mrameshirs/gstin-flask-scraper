@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: gstin-scraper-flask
+    env: docker # Use Docker environment
+    # dockerfilePath: ./Dockerfile # Path to your Dockerfile (defaults to ./Dockerfile)
+    # dockerContext: . # Context for Docker build (defaults to ./)
+    healthCheckPath: / # A simple path Render can check to see if your app is live
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.19 # Match Python version in Dockerfile if needed, though Docker handles it
+      - key: FLASK_ENV # Already set in Dockerfile, but can be here too
+        value: production
+      # CHROMEDRIVER_PATH is now handled by installing to /usr/bin/chromedriver in Dockerfile
+      # You can set other environment variables here if your app needs them
+    # plan: free # or standard, etc.
+    # autoDeploy: true # Optional: deploy on push to the main branch
+    # region: oregon # Optional: specify a region
+    # buildFilter: # Optional: specify paths that trigger a rebuild
+    #   paths:
+    #     - "app.py"
+    #     - "requirements.txt"
+    #     - "Dockerfile"
