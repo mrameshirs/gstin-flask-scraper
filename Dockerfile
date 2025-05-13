@@ -1,4 +1,4 @@
-# Dockerfile (Corrected Section)
+# Dockerfile (Corrected Section v2)
 # Use an official Python runtime as a parent image
 FROM python:3.9-slim
 
@@ -13,32 +13,44 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     gnupg \
     ca-certificates \
+    unzip \
     # --- Google Chrome ---
-    # Add Google Chrome's official GPG key
-    && wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    # Add Google Chrome's official GPG key using the recommended method
+    && echo "Adding Google Chrome GPG key..." \
+    && wget -qO- https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg \
     # Add Google Chrome's PPA
-    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' \
+    && echo "Adding Google Chrome repository..." \
+    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
     # Install Google Chrome Stable
-    && apt-get update && apt-get install -y google-chrome-stable \
+    && echo "Updating package list after adding Chrome repo..." \
+    && apt-get update \
+    && echo "Installing Google Chrome Stable..." \
+    && apt-get install -y google-chrome-stable \
     # --- ChromeDriver ---
     # Pin a known good version of Chromedriver.
-    # Check https://googlechromelabs.github.io/chrome-for-testing/ for version mapping if Chrome stable version changes significantly.
-    # This version should be compatible with the google-chrome-stable installed above.
-    # You might need to adjust this CHROMEDRIVER_VERSION based on the actual google-chrome-stable version installed.
+    # This version should be compatible with a relatively recent google-chrome-stable.
+    # If google-chrome-stable installs a very different version, this might need adjustment for runtime compatibility,
+    # but the download itself should work with the correct URL.
     && CHROMEDRIVER_VERSION="114.0.5735.90" \
     && echo "Attempting to download Chromedriver version: ${CHROMEDRIVER_VERSION}" \
-    && wget -q --continue -P /tmp https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/${CHROMEDRIVER_VERSION}/linux64/chromedriver-linux64.zip \
+    && wget -q --continue -P /tmp https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip \
     && echo "Unzipping Chromedriver..." \
-    && unzip /tmp/chromedriver-linux64.zip -d /tmp/ \
-    && echo "Moving Chromedriver to /usr/bin..." \
-    && mv /tmp/chromedriver-linux64/chromedriver /usr/bin/chromedriver \
+    && unzip /tmp/chromedriver_linux64.zip -d /usr/bin/ \
+    # The zip file for 114.0.5735.90 directly contains 'chromedriver', not a subfolder.
+    # If it were in a subfolder like 'chromedriver-linux64', the mv command would be different.
+    # Let's assume it extracts directly to /usr/bin/ or we might need to adjust path for 'mv' if unzip creates a subdir.
+    # A common practice is to unzip to /tmp and then mv. Let's stick to that.
+    # Re-doing unzip and mv for clarity and common practice:
+    && rm -f /usr/bin/chromedriver # Remove if previous unzip put it there directly
+    && unzip /tmp/chromedriver_linux64.zip -d /tmp/ \
+    && mv /tmp/chromedriver /usr/bin/chromedriver \
     && echo "Setting Chromedriver permissions..." \
     && chmod +x /usr/bin/chromedriver \
     && echo "Cleaning up downloaded zip..." \
-    && rm /tmp/chromedriver-linux64.zip \
-    && rm -rf /tmp/chromedriver-linux64 \
+    && rm /tmp/chromedriver_linux64.zip \
     # Clean up apt caches and temporary files
-    && apt-get purge -y --auto-remove wget gnupg \
+    && echo "Cleaning up apt packages..." \
+    && apt-get purge -y --auto-remove wget gnupg unzip \
     && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory in the container
